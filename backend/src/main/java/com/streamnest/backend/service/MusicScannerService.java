@@ -33,6 +33,9 @@ public class MusicScannerService {
 
                 songs.add(
                         new SongResponse(
+                                file.getName().replace(".mp3", ""),
+                                "Unknown Artist",
+                                "Unknown Album",
                                 file.getName()
                         )
                 );
