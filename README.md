@@ -14,18 +14,18 @@ A self-hosted music streaming platform that turns an Android device into a perso
 ## Architecture
 
 ```text
-React PWA
-    │
-    ▼
-Spring Boot API
-    │
-    ▼
-Android Phone Server
-    │
- ┌──┴─────────┐
- │            │
- ▼            ▼
-SQLite    Music Files
+               React PWA
+                   │
+                   ▼
+             Spring Boot API
+                   │
+                   ▼
+            Android Phone Server
+                   │
+ ┌─────────────────┴─────────────────┐
+ │                                   │
+ ▼                                   ▼
+Metadata Cache                  Music Files
 ```
 
 ## Tech Stack
@@ -59,3 +59,19 @@ SQLite    Music Files
 - [ ] React PWA frontend
 - [ ] Global access via Tailscale
 - [ ] Playlists
+
+## Version 1 Goals
+
+The initial release focuses on:
+
+- Music library scanning
+- Metadata extraction
+- Search functionality
+- Audio streaming
+- Android phone deployment
+
+The first version intentionally avoids:
+- Recommendation systems
+- Authentication
+- Database persistence
+- User accounts
