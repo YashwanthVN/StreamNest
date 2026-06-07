@@ -14,18 +14,18 @@ A self-hosted music streaming platform that turns an Android device into a perso
 ## Architecture
 
 ```text
-               React PWA
-                   │
-                   ▼
-             Spring Boot API
-                   │
-                   ▼
-            Android Phone Server
-                   │
- ┌─────────────────┴─────────────────┐
- │                                   │
- ▼                                   ▼
-Metadata Cache                  Music Files
+                      React PWA
+                          │
+                          ▼
+                    Spring Boot API
+                          │
+                          ▼
+                   Android Phone Server
+                          │
+        ┌─────────────────┴─────────────────┐
+        │                                   │
+        ▼                                   ▼
+Metadata Cache                         Music Files
 ```
 
 ## Tech Stack
