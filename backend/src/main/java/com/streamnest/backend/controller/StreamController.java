@@ -18,12 +18,9 @@ public class StreamController {
     private String musicPath;
 
     @GetMapping("/stream/{fileName}")
-    public ResponseEntity<Resource> streamSong(
-            @PathVariable String fileName
-    ) throws Exception {
+    public ResponseEntity<Resource> streamSong(@PathVariable String fileName) throws Exception {
 
         Path path = Paths.get(musicPath, fileName);
-
         Resource resource = new UrlResource(path.toUri());
 
         if (!resource.exists()) {

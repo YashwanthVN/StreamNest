@@ -30,11 +30,62 @@ Metadata Cache                         Music Files
 
 ## Tech Stack
 
+## API Endpoints
+
+### Health Check
+
+```http
+GET /api/health
+```
+
+Example Response:
+
+```json
+{
+  "status": "ok",
+  "service": "StreamNest",
+  "version": "0.0.1"
+}
+```
+
+### List Songs
+
+```http
+GET /api/songs
+```
+
+### Stream Audio
+
+```http
+GET /api/stream/{filename}
+```
+
+## Local Development
+
+### Backend
+
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+```
+Server: http://localhost:8080
+```
+
 ### Frontend
-- React
-- TypeScript
-- Vite
-- PWA
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Server:
+
+```text
+http://localhost:5173
+```
 
 ### Backend
 - Spring Boot
@@ -51,7 +102,7 @@ Phase 1: Backend MVP
 - ✓ Health API
 - ✓ Music Scan API
 - ✓ Metadata API
-- ⬜ Audio Streaming API
+- ✓ Audio Streaming API
 
 Phase 2: Frontend
 - ⬜ React + Vite
@@ -67,6 +118,18 @@ Phase 3: Phone Deployment
 Phase 4: Remote Access
 - ⬜ Tailscale
 - ⬜ Global streaming
+
+🚧 Active Development
+
+Current Progress:
+- ✅ Spring Boot backend initialized
+- ✅ Music library scanning
+- ✅ MP3 metadata extraction (ID3 tags)
+- ✅ Audio streaming endpoint
+- ✅ React + TypeScript frontend initialized
+- ⏳ Frontend song browser
+- ⏳ Audio player UI
+- ⏳ Android deployment
 
 ## Roadmap
 
