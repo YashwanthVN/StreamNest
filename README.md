@@ -47,7 +47,26 @@ Metadata Cache                         Music Files
 
 ## Project Status
 
-🚧 Planning & Setup Phase
+Phase 1: Backend MVP
+✓ Health API
+✓ Music Scan API
+✓ Metadata API
+⬜ Audio Streaming API
+
+Phase 2: Frontend
+⬜ React + Vite
+⬜ Song List
+⬜ Search
+⬜ Audio Player
+
+Phase 3: Phone Deployment
+⬜ Build Jar
+⬜ Copy to Android
+⬜ Run via Termux
+
+Phase 4: Remote Access
+⬜ Tailscale
+⬜ Global streaming
 
 ## Roadmap
 
