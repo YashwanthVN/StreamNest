@@ -1,24 +1,43 @@
-# Java
-backend/target/
-
+# =========================
+# Java / Spring Boot
+# =========================
 # Maven local files
 .mvn/wrapper/maven-wrapper.jar
-
-# IntelliJ
-.idea/
-*.iml
-
-# Node
-frontend/node_modules/
-frontend/dist/
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
 
 # Logs
 *.log
+logs/
 
-# OS
+# =========================
+# Node / React / Vite
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# =========================
+# IDEs
+# =========================
+.idea/
+.vscode/
+*.iml
+
+# =========================
+# OS Files
+# =========================
 .DS_Store
 Thumbs.db
 
-# Environment
+# =========================
+# Environment Variables
+# =========================
 .env
 .env.local
+!.env.example
+
+# =========================
+# Generated Files
+# =========================
+coverage/

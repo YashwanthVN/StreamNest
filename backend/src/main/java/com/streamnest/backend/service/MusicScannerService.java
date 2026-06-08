@@ -36,14 +36,18 @@ public class MusicScannerService {
                 || !file.getName().toLowerCase().endsWith(".mp3")) {
             continue;
         }
-
+        String title = file.getName().replaceFirst("(?i)\\.mp3$", "");
+        String artist = "Unknown Artist";
+        String album = "Unknown Album";
+        String id = String.valueOf(
+                file.getAbsolutePath().hashCode()
+                );
+                
         try {
 
             Mp3File mp3File = new Mp3File(file);
 
-            String title = file.getName().replace(".mp3", "");
-            String artist = "Unknown Artist";
-            String album = "Unknown Album";
+            
 
             if (mp3File.hasId3v2Tag()) {
 
@@ -78,8 +82,10 @@ public class MusicScannerService {
                 }
             }
 
+
             songs.add(
                     new SongResponse(
+                            id,
                             title,
                             artist,
                             album,
@@ -91,7 +97,8 @@ public class MusicScannerService {
 
             songs.add(
                     new SongResponse(
-                            file.getName().replace(".mp3", ""),
+                            String.valueOf(file.getAbsolutePath().hashCode()),
+                            file.getName().replaceFirst("(?i)\\.mp3$", ""),
                             "Unknown Artist",
                             "Unknown Album",
                             file.getName()
