@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
+import { FaPlay } from "react-icons/fa";
+
 import { getSongs } from "./services/api";
 import type { Song } from "./types/Song";
+
+import "./App.css";
 
 const API_BASE = "http://localhost:8080";
 
 function App() {
-
   const [songs, setSongs] = useState<Song[]>([]);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
 
@@ -14,36 +17,45 @@ function App() {
   }, []);
 
   return (
-    <div>
+    <div className="app">
 
-      <h1>StreamNest</h1>
+      <div className="header">
+        🎵 StreamNest
+      </div>
 
-      {songs.map(song => (
-        <div
-          key={song.id}
-          style={{
-            border: "1px solid gray",
-            margin: "10px",
-            padding: "10px"
-          }}
-        >
-          <h3>{song.title}</h3>
+      <div className="song-list">
 
-          <p>{song.artist}</p>
+        {songs.map(song => (
 
-          <button
-            onClick={() => setCurrentSong(song)}
+          <div
+            key={song.id}
+            className="song-card"
           >
-            Play
-          </button>
+            <div className="song-info">
+              <h3>{song.title}</h3>
+              <p>{song.artist}</p>
+            </div>
 
-        </div>
-      ))}
+            <button
+              className="play-button"
+              onClick={() => setCurrentSong(song)}
+            >
+              <FaPlay />
+            </button>
+
+          </div>
+
+        ))}
+
+      </div>
 
       {currentSong && (
-        <div>
 
-          <h2>Now Playing</h2>
+        <div className="player">
+
+          <h3>
+            Now Playing
+          </h3>
 
           <p>
             {currentSong.title}
@@ -52,12 +64,14 @@ function App() {
           <audio
             controls
             autoPlay
+            style={{ width: "100%" }}
             src={`${API_BASE}/api/stream/${encodeURIComponent(
               currentSong.fileName
             )}`}
           />
 
         </div>
+
       )}
 
     </div>
