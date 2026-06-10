@@ -26,9 +26,53 @@ function App() {
   const audioRef =
       useRef<HTMLAudioElement>(null);
 
+  const [currentTime, setCurrentTime] = useState(0);
+
+  const [duration, setDuration] = useState(0);
+
   useEffect(()=>{
     getSongs().then(setSongs);
   },[]);
+
+  useEffect(() => {
+
+  const audio = audioRef.current;
+
+  if (!audio) return;
+
+  const updateTime = () => {
+    setCurrentTime(audio.currentTime);
+  };
+
+  const updateDuration = () => {
+    setDuration(audio.duration || 0);
+  };
+
+  audio.addEventListener(
+      "timeupdate",
+      updateTime
+  );
+
+  audio.addEventListener(
+      "loadedmetadata",
+      updateDuration
+  );
+
+  return () => {
+
+    audio.removeEventListener(
+        "timeupdate",
+        updateTime
+    );
+
+    audio.removeEventListener(
+        "loadedmetadata",
+        updateDuration
+    );
+
+  };
+
+}, []);
 
   const filteredSongs = songs.filter(song => {
 
@@ -102,10 +146,12 @@ function App() {
       </main>
 
       <Player
-        currentSong={currentSong?.title}
+        currentSong={currentSong}
         audioRef={audioRef}
         playing={playing}
         togglePlay={togglePlay}
+        currentTime={currentTime}
+        duration={duration}
       />
 
     </div>
