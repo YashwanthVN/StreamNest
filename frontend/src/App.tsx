@@ -1,78 +1,112 @@
-import { useEffect, useState } from "react";
-import { FaPlay } from "react-icons/fa";
-
-import { getSongs } from "./services/api";
-import type { Song } from "./types/Song";
-
 import "./App.css";
 
-const API_BASE = "http://localhost:8080";
+import { useEffect, useRef, useState } from "react";
+
+import Sidebar from "./components/Sidebar";
+import SongList from "./components/SongList";
+import SearchBar from "./components/SearchBar";
+import Player from "./components/Player";
+import AlbumArt from "./components/AlbumArt";
+
+import { getSongs } from "./services/api";
+
+import type { Song } from "./types/Song";
 
 function App() {
-  const [songs, setSongs] = useState<Song[]>([]);
-  const [currentSong, setCurrentSong] = useState<Song | null>(null);
 
-  useEffect(() => {
+  const [songs,setSongs] = useState<Song[]>([]);
+  const [search,setSearch] = useState("");
+
+  const [currentSong,setCurrentSong] =
+      useState<Song>();
+
+  const [playing,setPlaying] =
+      useState(false);
+
+  const audioRef =
+      useRef<HTMLAudioElement>(null);
+
+  useEffect(()=>{
     getSongs().then(setSongs);
-  }, []);
+  },[]);
+
+  const filteredSongs = songs.filter(song => {
+
+    const q = search.toLowerCase();
+
+    return (
+        song.title.toLowerCase().includes(q) ||
+        song.artist.toLowerCase().includes(q) ||
+        song.album.toLowerCase().includes(q)
+    );
+  });
+
+  function selectSong(song:Song){
+
+    setCurrentSong(song);
+
+    if(audioRef.current){
+
+      audioRef.current.src =
+        `http://localhost:8080/api/stream/${encodeURIComponent(song.fileName)}`;
+
+      audioRef.current.play();
+
+      setPlaying(true);
+    }
+  }
+
+  function togglePlay(){
+
+    if(!audioRef.current) return;
+
+    if(playing){
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+
+    setPlaying(!playing);
+  }
 
   return (
+
     <div className="app">
 
-      <div className="header">
-        🎵 StreamNest
-      </div>
+      <Sidebar/>
 
-      <div className="song-list">
+      <main
+        style={{
+          flex:1,
+          padding:"20px"
+        }}
+      >
 
-        {songs.map(song => (
+        <SearchBar
+          search={search}
+          setSearch={setSearch}
+        />
 
-          <div
-            key={song.id}
-            className="song-card"
-          >
-            <div className="song-info">
-              <h3>{song.title}</h3>
-              <p>{song.artist}</p>
-            </div>
+        <AlbumArt/>
+        
+        <p className="song-count">
+          {filteredSongs.length} songs
+        </p>
 
-            <button
-              className="play-button"
-              onClick={() => setCurrentSong(song)}
-            >
-              <FaPlay />
-            </button>
+        <SongList
+          songs={filteredSongs}
+          currentSongId={currentSong?.id}
+          onSelect={selectSong}
+        />
 
-          </div>
+      </main>
 
-        ))}
-
-      </div>
-
-      {currentSong && (
-
-        <div className="player">
-
-          <h3>
-            Now Playing
-          </h3>
-
-          <p>
-            {currentSong.title}
-          </p>
-
-          <audio
-            controls
-            autoPlay
-            style={{ width: "100%" }}
-            src={`${API_BASE}/api/stream/${encodeURIComponent(
-              currentSong.fileName
-            )}`}
-          />
-
-        </div>
-
-      )}
+      <Player
+        currentSong={currentSong?.title}
+        audioRef={audioRef}
+        playing={playing}
+        togglePlay={togglePlay}
+      />
 
     </div>
   );
