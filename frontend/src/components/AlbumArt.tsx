@@ -1,9 +1,9 @@
 export default function AlbumArt() {
   return (
     <img
-      src="https://placehold.co/400x400"
-      alt="album"
       className="album-art"
+      src="https://placehold.co/400x400/1e293b/ffffff?text=🎵"
+      alt="Album Art"
     />
   );
 }

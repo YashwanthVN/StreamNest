@@ -28,18 +28,6 @@ body{
   gap: 12px;
 }
 
-.song-card {
-  background:#1e293b;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:10px;
-  cursor:pointer;
-}
-
-.song-card:hover {
-  background: #292929;
-}
-
 .song-info h3 {
   margin: 0;
 }
@@ -62,19 +50,36 @@ body{
   font-size: 18px;
 }
 
-.player {
-  position: fixed;
+.player{
+  position:fixed;
 
-  bottom: 0;
-  left: 0;
+  bottom:0;
+  left:0;
 
-  width: 100%;
+  width:100%;
 
-  background: #181818;
+  display:flex;
+  align-items:center;
+  gap:20px;
 
-  padding: 15px;
+  background:#111827;
 
-  border-top: 1px solid #333;
+  padding:20px;
+
+  border-top:1px solid #1f2937;
+}
+
+.player button{
+  width:48px;
+  height:48px;
+
+  border:none;
+  border-radius:50%;
+
+  background:#8b5cf6;
+  color:white;
+
+  cursor:pointer;
 }
 
 .sidebar {
@@ -117,13 +122,20 @@ body{
   margin-bottom:20px;
 }
 
-.song-card:hover {
-  background:#334155;
+.song-card {
+  background:#1e293b;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:10px;
+  cursor:pointer;
+  transition:
+    transform .2s,
+    background .2s;
 }
 
-.song-count {
-  color:#94a3b8;
-  margin-bottom:15px;
+.song-card:hover {
+  background:#334155;
+  transform:translateY(-2px);
 }
 
 .song-card.active {
@@ -134,3 +146,62 @@ body{
   color:#94a3b8;
 }
 
+.song-count {
+  color:#94a3b8;
+  margin-bottom:15px;
+}
+
+.hero{
+  display:flex;
+  gap:30px;
+  align-items:center;
+  margin-bottom:25px;
+}
+
+.hero-info{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.hero-info h1{
+  font-size:2.5rem;
+  max-width:600px;
+}
+
+.hero-info h3{
+  color:#cbd5e1;
+}
+
+.hero-info p{
+  color:#94a3b8;
+}
+
+.now-playing{
+  color:#8b5cf6 !important;
+  font-weight:bold;
+  letter-spacing:1px;
+}
+
+@media (max-width:768px){
+
+  .app{
+    flex-direction:column;
+  }
+
+  .sidebar{
+    width:100%;
+    border-right:none;
+    border-bottom:1px solid #1f2937;
+  }
+
+  .hero{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .album-art{
+    width:100%;
+    max-width:300px;
+  }
+}
