@@ -89,7 +89,8 @@ public class MusicScannerService {
                             title,
                             artist,
                             album,
-                            file.getName()
+                            file.getName(),
+                            "/api/artwork/" + id
                     )
             );
 
@@ -101,7 +102,8 @@ public class MusicScannerService {
                             file.getName().replaceFirst("(?i)\\.mp3$", ""),
                             "Unknown Artist",
                             "Unknown Album",
-                            file.getName()
+                            file.getName(),
+                            null
                     )
             );
         }

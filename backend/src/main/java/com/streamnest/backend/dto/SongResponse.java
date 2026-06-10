@@ -5,5 +5,6 @@ public record SongResponse(
         String title,
         String artist,
         String album,
-        String fileName
+        String fileName,
+        String artworkUrl
 ) {}

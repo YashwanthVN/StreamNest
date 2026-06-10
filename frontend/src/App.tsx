@@ -131,7 +131,9 @@ function App() {
           setSearch={setSearch}
         />
 
-        <AlbumArt/>
+        <AlbumArt
+          artworkUrl={currentSong?.artworkUrl}
+        />
         
         <p className="song-count">
           {filteredSongs.length} songs

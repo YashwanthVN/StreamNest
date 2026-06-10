@@ -4,4 +4,5 @@ export interface Song {
   artist: string;
   album: string;
   fileName: string;
+  artworkUrl?: string;
 }
