@@ -8,7 +8,7 @@ export default function AlbumArt({
 
   return (
     <img
-      className="album-art"
+      className="album-art spinning"
       src={
         artworkUrl
           ? `http://localhost:8080${artworkUrl}`

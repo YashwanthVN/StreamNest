@@ -7,6 +7,7 @@ import SongList from "./components/SongList";
 import SearchBar from "./components/SearchBar";
 import Player from "./components/Player";
 import AlbumArt from "./components/AlbumArt";
+import AnimatedBackground from "./components/AnimatedBackground";
 
 import { getSongs } from "./services/api";
 
@@ -36,16 +37,11 @@ function App() {
 
   useEffect(() => {
 
-  if(currentSong?.artworkUrl){
+    if(songs.length > 0 && !currentSong){
+      selectSong(songs[0]);
+    }
 
-    document.body.style.setProperty(
-      "--bg-art",
-      `url(http://localhost:8080${currentSong.artworkUrl})`
-    );
-
-  }
-
-}, [currentSong]);
+  }, [songs]);
 
   useEffect(() => {
 
@@ -190,6 +186,11 @@ function App() {
   return (
 
     <div className="app">
+
+      <AnimatedBackground
+        artworkUrl={currentSong?.artworkUrl}
+      />
+
 
       <Sidebar/>
 
