@@ -1,4 +1,4 @@
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward } from "lucide-react";
 import type { Song } from "../types/Song";
 
 type Props = {
@@ -8,6 +8,8 @@ type Props = {
   togglePlay: () => void;
   currentTime: number;
   duration: number;
+  playPreviousSong: () => void;
+  playNextSong: () => void;
 };
 
 export default function Player({
@@ -16,7 +18,9 @@ export default function Player({
   playing,
   togglePlay,
   currentTime,
-  duration
+  duration,
+  playPreviousSong,
+  playNextSong
 }:Props){
   function seekSong(
     e: React.ChangeEvent<HTMLInputElement>
@@ -45,9 +49,15 @@ export default function Player({
       <audio ref={audioRef} />
       <div className="player-top">
         <div className="player-song">
-          <div className="mini-cover">
-            🎵
-          </div>
+          <img
+            className="mini-cover"
+            src={
+              currentSong?.artworkUrl
+                ? `http://localhost:8080${currentSong.artworkUrl}`
+                : "https://placehold.co/100x100/1e293b/ffffff?text=🎵"
+            }
+            alt="album art"
+          />
 
           <div>
 
@@ -63,9 +73,21 @@ export default function Player({
 
         </div>
 
-        <button onClick={togglePlay}>
-          {playing ? <Pause /> : <Play />}
-        </button>
+        <div className="player-controls">
+
+          <button onClick={playPreviousSong}>
+            <SkipBack />
+          </button>
+
+          <button onClick={togglePlay}>
+            {playing ? <Pause /> : <Play />}
+          </button>
+
+          <button onClick={playNextSong}>
+            <SkipForward />
+          </button>
+
+        </div>
 
       </div>
 

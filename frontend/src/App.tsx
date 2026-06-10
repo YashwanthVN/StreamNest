@@ -36,6 +36,19 @@ function App() {
 
   useEffect(() => {
 
+  if(currentSong?.artworkUrl){
+
+    document.body.style.setProperty(
+      "--bg-art",
+      `url(http://localhost:8080${currentSong.artworkUrl})`
+    );
+
+  }
+
+}, [currentSong]);
+
+  useEffect(() => {
+
   const audio = audioRef.current;
 
   if (!audio) return;
@@ -48,6 +61,23 @@ function App() {
     setDuration(audio.duration || 0);
   };
 
+  const handleEnded = () => {
+
+    if(!currentSong) return;
+
+    const index = songs.findIndex(
+      s => s.id === currentSong.id
+    );
+
+    const nextSong =
+      songs[(index + 1) % songs.length];
+
+    if(nextSong){
+      selectSong(nextSong);
+    }
+
+  };
+
   audio.addEventListener(
       "timeupdate",
       updateTime
@@ -56,6 +86,11 @@ function App() {
   audio.addEventListener(
       "loadedmetadata",
       updateDuration
+  );
+
+  audio.addEventListener(
+    "ended",
+    handleEnded
   );
 
   return () => {
@@ -70,9 +105,14 @@ function App() {
         updateDuration
     );
 
+    audio.removeEventListener(
+      "ended",
+      handleEnded
+    );
+
   };
 
-}, []);
+}, [currentSong, songs]);
 
   const filteredSongs = songs.filter(song => {
 
@@ -113,6 +153,40 @@ function App() {
     setPlaying(!playing);
   }
 
+  function playNextSong() {
+
+    if(!currentSong) return;
+
+    const index =
+        songs.findIndex(
+            s => s.id === currentSong.id
+        );
+
+    const nextSong =
+        songs[index + 1];
+
+    if(nextSong){
+      selectSong(nextSong);
+    }
+  }
+
+  function playPreviousSong() {
+
+    if(!currentSong) return;
+
+    const index =
+        songs.findIndex(
+            s => s.id === currentSong.id
+        );
+
+    const previousSong =
+        songs[index - 1];
+
+    if(previousSong){
+      selectSong(previousSong);
+    }
+  }
+
   return (
 
     <div className="app">
@@ -131,9 +205,37 @@ function App() {
           setSearch={setSearch}
         />
 
-        <AlbumArt
-          artworkUrl={currentSong?.artworkUrl}
-        />
+        <div className="hero">
+
+          <AlbumArt
+            artworkUrl={currentSong?.artworkUrl}
+          />
+
+          <div className="hero-info">
+
+            <p className="now-playing">
+              NOW PLAYING
+            </p>
+
+            <h1>
+              {currentSong?.title || "Select a song"}
+            </h1>
+
+            <h3>
+              {currentSong?.artist}
+            </h3>
+
+            <p>
+              {currentSong?.album}
+            </p>
+
+            <p>
+              {filteredSongs.length} songs
+            </p>
+
+          </div>
+
+        </div>
         
         <p className="song-count">
           {filteredSongs.length} songs
@@ -146,6 +248,7 @@ function App() {
         />
 
       </main>
+      
 
       <Player
         currentSong={currentSong}
@@ -154,6 +257,8 @@ function App() {
         togglePlay={togglePlay}
         currentTime={currentTime}
         duration={duration}
+        playPreviousSong={playPreviousSong}
+        playNextSong={playNextSong}
       />
 
     </div>
