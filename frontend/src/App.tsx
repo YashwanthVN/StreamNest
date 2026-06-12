@@ -31,6 +31,20 @@ function App() {
 
   const [duration, setDuration] = useState(0);
 
+  const [shuffle, setShuffle] = useState(false);
+
+  const [repeat, setRepeat] = useState(false);
+
+  const [volume, setVolume] = useState(1);
+
+  useEffect(() => {
+
+    if(audioRef.current){
+      audioRef.current.volume = volume;
+    }
+
+  }, [volume]);
+
   useEffect(()=>{
     getSongs().then(setSongs);
   },[]);
@@ -59,19 +73,16 @@ function App() {
 
   const handleEnded = () => {
 
-    if(!currentSong) return;
+    if(repeat){
 
-    const index = songs.findIndex(
-      s => s.id === currentSong.id
-    );
+      audio.currentTime = 0;
 
-    const nextSong =
-      songs[(index + 1) % songs.length];
+      audio.play();
 
-    if(nextSong){
-      selectSong(nextSong);
+      return;
     }
 
+    playNextSong();
   };
 
   audio.addEventListener(
@@ -151,36 +162,57 @@ function App() {
 
   function playNextSong() {
 
-    if(!currentSong) return;
+    if(!currentSong || songs.length === 0){
+      return;
+    }
 
-    const index =
+    if(shuffle){
+
+      const randomIndex =
+          Math.floor(
+              Math.random() * songs.length
+          );
+
+      selectSong(
+          songs[randomIndex]
+      );
+
+      return;
+    }
+
+    const currentIndex =
         songs.findIndex(
             s => s.id === currentSong.id
         );
 
-    const nextSong =
-        songs[index + 1];
+    const nextIndex =
+        (currentIndex + 1)
+        % songs.length;
 
-    if(nextSong){
-      selectSong(nextSong);
-    }
+    selectSong(
+        songs[nextIndex]
+    );
   }
 
   function playPreviousSong() {
 
-    if(!currentSong) return;
+    if(!currentSong || songs.length === 0){
+      return;
+    }
 
-    const index =
+    const currentIndex =
         songs.findIndex(
             s => s.id === currentSong.id
         );
 
-    const previousSong =
-        songs[index - 1];
+    const previousIndex =
+        currentIndex === 0
+            ? songs.length - 1
+            : currentIndex - 1;
 
-    if(previousSong){
-      selectSong(previousSong);
-    }
+    selectSong(
+        songs[previousIndex]
+    );
   }
 
   return (
@@ -260,6 +292,20 @@ function App() {
         duration={duration}
         playPreviousSong={playPreviousSong}
         playNextSong={playNextSong}
+
+        shuffle={shuffle}
+        repeat={repeat}
+
+        toggleShuffle={() =>
+            setShuffle(!shuffle)
+        }
+
+        toggleRepeat={() =>
+            setRepeat(!repeat)
+        }
+
+        volume={volume}
+        setVolume={setVolume}
       />
 
     </div>

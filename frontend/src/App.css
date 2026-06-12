@@ -4,6 +4,12 @@
   padding: 0;
 }
 
+.active-control {
+  background:#a855f7 !important;
+  box-shadow:
+      0 0 15px rgba(168,85,247,.8);
+}
+
 .album-art {
   border-radius: 24px;
   box-shadow: 0 10px 40px rgba(0,0,0,.35);
@@ -268,6 +274,16 @@ body {
 .song-list {
   display: grid;
   gap: 12px;
+}
+
+.volume-section {
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.volume-section input {
+  width:120px;
 }
 
 /* Animations & Media Queries */

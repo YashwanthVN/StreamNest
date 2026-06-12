@@ -1,4 +1,4 @@
-import { Play, Pause, SkipBack, SkipForward } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2 } from "lucide-react";
 import type { Song } from "../types/Song";
 
 type Props = {
@@ -10,6 +10,12 @@ type Props = {
   duration: number;
   playPreviousSong: () => void;
   playNextSong: () => void;
+  shuffle: boolean;
+  repeat: boolean;
+  toggleShuffle: () => void;
+  toggleRepeat: () => void;
+  volume: number;
+  setVolume: (volume:number) => void;
 };
 
 export default function Player({
@@ -20,7 +26,13 @@ export default function Player({
   currentTime,
   duration,
   playPreviousSong,
-  playNextSong
+  playNextSong,
+  shuffle,
+  repeat,
+  toggleShuffle,
+  toggleRepeat,
+  volume,
+  setVolume
 }:Props){
   function seekSong(
     e: React.ChangeEvent<HTMLInputElement>
@@ -75,6 +87,15 @@ export default function Player({
 
         <div className="player-controls">
 
+          <button
+            onClick={toggleShuffle}
+            className={
+              shuffle ? "active-control" : ""
+            }
+          >
+            <Shuffle />
+          </button>
+
           <button onClick={playPreviousSong}>
             <SkipBack />
           </button>
@@ -86,6 +107,34 @@ export default function Player({
           <button onClick={playNextSong}>
             <SkipForward />
           </button>
+
+          <button
+            onClick={toggleRepeat}
+            className={
+              repeat ? "active-control" : ""
+            }
+          >
+            <Repeat />
+          </button>
+
+        </div>
+
+        <div className="volume-section">
+
+          <Volume2 size={18} />
+
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.01}
+            value={volume}
+            onChange={(e)=>
+              setVolume(
+                Number(e.target.value)
+              )
+            }
+          />
 
         </div>
 
