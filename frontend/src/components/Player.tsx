@@ -59,84 +59,108 @@ export default function Player({
   return (
     <div className="player">
       <audio ref={audioRef} />
-      <div className="player-top">
-        <div className="player-song">
-          <img
-            className="mini-cover"
-            src={
-              currentSong?.artworkUrl
-                ? `http://localhost:8080${currentSong.artworkUrl}`
-                : "https://placehold.co/100x100/1e293b/ffffff?text=🎵"
-            }
-            alt="album art"
-          />
+      <div className="player-layout">
+        <div className="player-left">
+          <div className="player-song">
 
-          <div>
+            <img
+              className="mini-cover"
+              src={
+                currentSong?.artworkUrl
+                  ? `http://localhost:8080${currentSong.artworkUrl}`
+                  : "https://placehold.co/100x100/1e293b/ffffff?text=🎵"
+              }
+              alt="album art"
+            />
 
-            <strong>
-              {currentSong?.title}
-            </strong>
+            <div className="song-meta">
 
-            <p>
-              {currentSong?.artist}
-            </p>
+              <div className="song-title-container">
+
+                <div
+                  className={
+                    currentSong?.title &&
+                    currentSong.title.length > 30
+                      ? "song-title-scroll marquee"
+                      : "song-title-scroll"
+                  }
+                >
+                  {currentSong?.title}
+                </div>
+
+              </div>
+
+              <p className="song-artist">
+                {currentSong?.artist}
+              </p>
+
+            </div>
 
           </div>
-
         </div>
 
-        <div className="player-controls">
+        <div className="player-center">
+          <div className="player-controls">
 
-          <button
-            onClick={toggleShuffle}
-            className={
-              shuffle ? "active-control" : ""
-            }
-          >
-            <Shuffle />
-          </button>
+            <button
+              onClick={toggleShuffle}
+              className={
+                shuffle ? "active-control" : ""
+              }
+            >
+              <Shuffle />
+            </button>
 
-          <button onClick={playPreviousSong}>
-            <SkipBack />
-          </button>
+            <button onClick={playPreviousSong}>
+              <SkipBack />
+            </button>
 
-          <button onClick={togglePlay}>
-            {playing ? <Pause /> : <Play />}
-          </button>
+            <button onClick={togglePlay}>
+              {playing ? <Pause /> : <Play />}
+            </button>
 
-          <button onClick={playNextSong}>
-            <SkipForward />
-          </button>
+            <button onClick={playNextSong}>
+              <SkipForward />
+            </button>
 
-          <button
-            onClick={toggleRepeat}
-            className={
-              repeat ? "active-control" : ""
-            }
-          >
-            <Repeat />
-          </button>
+            <button
+              onClick={toggleRepeat}
+              className={
+                repeat ? "active-control" : ""
+              }
+            >
+              <Repeat />
+            </button>
 
+          </div>
+          <div className="shortcut-help">
+              Space • Play/Pause |
+              ← → Seek |
+              Ctrl+← Previous |
+              Ctrl+→ Next
+            </div>
         </div>
 
-        <div className="volume-section">
+        <div className="player-right">
+          <div className="volume-section">
 
-          <Volume2 size={18} />
+            <Volume2 size={18} />
 
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.01}
-            value={volume}
-            onChange={(e)=>
-              setVolume(
-                Number(e.target.value)
-              )
-            }
-          />
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={volume}
+              onChange={(e)=>
+                setVolume(
+                  Number(e.target.value)
+                )
+              }
+            />
 
-        </div>
+          </div>
+        </div>      
 
       </div>
 

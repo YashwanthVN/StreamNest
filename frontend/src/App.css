@@ -4,6 +4,10 @@
   padding: 0;
 }
 
+main{
+  padding-bottom:140px;
+}
+
 .active-control {
   background:#a855f7 !important;
   box-shadow:
@@ -106,6 +110,10 @@ body {
   color: #94a3b8;
 }
 
+.marquee{
+  animation: marquee 12s linear infinite;
+}
+
 .mini-cover {
   background: #1e293b;
   border-radius: 10px;
@@ -145,12 +153,6 @@ body {
   width: 100%;
 }
 
-.player- {
-  align-items: center;
-  display: flex;
-  gap: 12px;
-}
-
 .player button {
   background: #8b5cf6;
   border: none;
@@ -159,6 +161,12 @@ body {
   cursor: pointer;
   height: 48px;
   width: 48px;
+}
+
+.player-center{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 }
 
 .player-controls {
@@ -180,16 +188,28 @@ body {
   width: 48px;
 }
 
+.player-layout{
+  display:grid;
+  grid-template-columns:300px auto 300px;
+  align-items:center;
+}
+
+.player-left{
+  display:flex;
+  align-items:center;
+  min-width:0;
+}
+
+.player-right{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+}
+
 .player-song {
   align-items: center;
   display: flex;
   gap: 15px;
-}
-
-.player-top {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
 }
 
 .progress-bar {
@@ -208,6 +228,13 @@ body {
   margin-bottom: 20px;
   padding: 12px;
   width: 100%;
+}
+
+.shortcut-help{
+  font-size:12px;
+  color:#94a3b8;
+  text-align:center;
+  margin-top:4px;
 }
 
 .sidebar {
@@ -233,6 +260,12 @@ body {
 
 .sidebar h2 {
   margin-bottom: 30px;
+}
+
+.song-artist{
+  color:#94a3b8;
+  font-size:14px;
+  margin-top:4px;
 }
 
 .song-card {
@@ -276,6 +309,24 @@ body {
   gap: 12px;
 }
 
+.song-meta{
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+.song-title-container{
+  width:220px;
+  overflow:hidden;
+  position:relative;
+}
+
+.song-title-scroll{
+  display:inline-block;
+  white-space:nowrap;
+  font-weight:600;
+}
+
 .volume-section {
   display:flex;
   align-items:center;
@@ -284,6 +335,17 @@ body {
 
 .volume-section input {
   width:120px;
+}
+
+@keyframes marquee{
+
+  0%{
+    transform:translateX(5%);
+  }
+
+  100%{
+    transform:translateX(-50%);
+  }
 }
 
 /* Animations & Media Queries */
