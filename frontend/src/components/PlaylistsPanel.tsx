@@ -60,7 +60,7 @@ export default function PlaylistsPanel({ playlists, songs, onPlay, onChange }: P
         {playlistSongs.length === 0 ? (
           <p className="empty-hint">No songs yet — add from the library</p>
         ) : (
-          playlistSongs.map((song, i) => (
+          playlistSongs.map((song) => (
             <div key={song.id} className="queue-row" onClick={() => onPlay(song)}>
               <div className="queue-art">
                 {getArtworkUrl(song.artworkUrl)

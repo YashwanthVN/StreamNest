@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ChevronRight, Clock, Music, Disc, Mic2 } from "lucide-react";
+import { Music, Disc, Mic2 } from "lucide-react";
 import type { Song } from "../types/Song";
 import { getArtworkUrl } from "../services/api";
 

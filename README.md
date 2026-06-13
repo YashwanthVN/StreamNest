@@ -105,13 +105,13 @@ Phase 1: Backend MVP
 - ✓ Audio Streaming API
 
 Phase 2: Frontend
-- ⬜ React + Vite
-- ⬜ Song List
-- ⬜ Search
-- ⬜ Audio Player
+- ✓ React + Vite
+- ✓ Song List
+- ✓ Search
+- ✓ Audio Player
 
 Phase 3: Phone Deployment
-- ⬜ Build Jar
+- ✓ Build Jar
 - ⬜ Copy to Android
 - ⬜ Run via Termux
 
@@ -127,8 +127,8 @@ Current Progress:
 - ✅ MP3 metadata extraction (ID3 tags)
 - ✅ Audio streaming endpoint
 - ✅ React + TypeScript frontend initialized
-- ⏳ Frontend song browser
-- ⏳ Audio player UI
+- ✅ Frontend song browser
+- ✅ Audio player UI
 - ⏳ Android deployment
 
 ## Roadmap

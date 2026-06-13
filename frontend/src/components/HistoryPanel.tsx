@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Clock, Trash2, Info, X } from "lucide-react";
+import { Clock, Info, X } from "lucide-react";
 import type { Song, HistoryEntry } from "../types/Song";
 import { getArtworkUrl } from "../services/api";
 import { clearHistory } from "../services/storage";
