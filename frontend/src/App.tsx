@@ -8,25 +8,31 @@ import SongLibrary from "./components/SongLibrary";
 import QueuePanel from "./components/QueuePanel";
 import HistoryPanel from "./components/HistoryPanel";
 import PlaylistsPanel from "./components/PlaylistsPanel";
+import AlbumView from "./components/AlbumView";
+import SettingsPanel from "./components/SettingsPanel";
 import {
   getFavorites, toggleFavorite,
   getHistory, getPlaylists,
   addToPlaylist,
+  getTheme, applyTheme,
+  type Theme,
 } from "./services/storage";
 import "./App.css";
 
 export default function App() {
-  const [songs, setSongs]         = useState<Song[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState<string | null>(null);
+  const [songs, setSongs]           = useState<Song[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState<string | null>(null);
   const [activeView, setActiveView] = useState<View>("library");
-
-  // Local state driven from localStorage
   const [favorites, setFavorites]   = useState<string[]>(getFavorites);
-  const [historyEntries, setHistory] = useState(getHistory);
+  const [historyEntries, setHistory]= useState(getHistory);
   const [playlists, setPlaylists]   = useState(getPlaylists);
+  const [theme, setTheme]           = useState<Theme>(getTheme);
 
   const player = usePlayer(songs);
+
+  // Apply saved theme on mount
+  useEffect(() => { applyTheme(theme); }, []);
 
   useEffect(() => {
     getSongs()
@@ -35,7 +41,6 @@ export default function App() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Refresh history when currentSong changes
   useEffect(() => {
     if (player.currentSong) setHistory(getHistory());
   }, [player.currentSong]);
@@ -54,24 +59,35 @@ export default function App() {
 
   const currentIsFav = player.currentSong ? favorites.includes(player.currentSong.id) : false;
 
+  const sharedLibraryProps = {
+    songs,
+    currentSong: player.currentSong,
+    playing: player.playing,
+    favorites,
+    playlists,
+    onSelect: player.playSong,
+    onAddToQueue: player.addToQueue,
+    onToggleFavorite: handleToggleFavorite,
+    onAddToPlaylist: handleAddToPlaylist,
+  };
+
   function renderMain() {
     if (loading) return <div className="loading-state"><div className="loader" /><p>Loading your library…</p></div>;
     if (error)   return <div className="error-state"><p>⚠️ {error}</p><button onClick={() => window.location.reload()}>Retry</button></div>;
 
     switch (activeView) {
       case "library":
+        return <SongLibrary {...sharedLibraryProps} />;
       case "favorites":
+        return <SongLibrary {...sharedLibraryProps} songs={songs.filter(s => favorites.includes(s.id))} />;
+      case "albums":
         return (
-          <SongLibrary
-            songs={activeView === "favorites" ? songs.filter(s => favorites.includes(s.id)) : songs}
+          <AlbumView
+            songs={songs}
             currentSong={player.currentSong}
             playing={player.playing}
-            favorites={favorites}
-            playlists={playlists}
             onSelect={player.playSong}
             onAddToQueue={player.addToQueue}
-            onToggleFavorite={handleToggleFavorite}
-            onAddToPlaylist={handleAddToPlaylist}
           />
         );
       case "queue":
@@ -81,7 +97,8 @@ export default function App() {
             currentSong={player.currentSong}
             onRemove={player.removeFromQueue}
             onClear={player.clearQueue}
-            onPlay={song => { player.playSong(song); player.removeFromQueue(player.queue.indexOf(song)); }}
+            onMove={player.moveInQueue}
+            onPlay={song => { player.playSong(song); }}
           />
         );
       case "history":
@@ -100,6 +117,13 @@ export default function App() {
             songs={songs}
             onPlay={player.playSong}
             onChange={refreshPlaylists}
+          />
+        );
+      case "settings":
+        return (
+          <SettingsPanel
+            currentTheme={theme}
+            onThemeChange={t => setTheme(t)}
           />
         );
     }

@@ -1,29 +1,60 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import type { Song } from "../types/Song";
 import { getStreamUrl, getArtworkUrl } from "../services/api";
-import { pushHistory } from "../services/storage";
+import {
+  pushHistory,
+  getPersistedQueue, saveQueue,
+  getPosition, savePosition, clearPosition,
+  getVolume, saveVolume,
+} from "../services/storage";
 
 export function usePlayer(songs: Song[]) {
-  const audioRef        = useRef<HTMLAudioElement>(new Audio());
-  const [currentSong, setCurrentSong]   = useState<Song | undefined>();
-  const [queue, setQueue]               = useState<Song[]>([]);   // upcoming
-  const [playing, setPlaying]           = useState(false);
-  const [currentTime, setCurrentTime]   = useState(0);
-  const [duration, setDuration]         = useState(0);
-  const [volume, setVolumeState]        = useState(0.8);
-  const [shuffle, setShuffle]           = useState(false);
-  const [repeat, setRepeat]             = useState(false);
-  const [playHistory, setPlayHistory]   = useState<Song[]>([]);
+  const audioRef      = useRef<HTMLAudioElement>(new Audio());
+  const saveTimer     = useRef<number>(0);
 
-  // ── Audio events ────────────────────────────────────────
+  const [currentSong, setCurrentSong] = useState<Song | undefined>();
+  const [queue, setQueue]             = useState<Song[]>(getPersistedQueue);
+  const [playing, setPlaying]         = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration]       = useState(0);
+  const [volume, setVolumeState]      = useState(getVolume);
+  const [shuffle, setShuffle]         = useState(false);
+  const [repeat, setRepeat]           = useState(false);
+  const [playHistory, setPlayHistory] = useState<Song[]>([]);
+
+  // Apply persisted volume on mount
+  useEffect(() => { audioRef.current.volume = getVolume(); }, []);
+
+  // Persist queue whenever it changes
+  useEffect(() => { saveQueue(queue); }, [queue]);
+
+  // Resume last position once songs are loaded
+  useEffect(() => {
+    if (!songs.length) return;
+    const pos = getPosition();
+    if (!pos) return;
+    const song = songs.find(s => s.id === pos.songId);
+    if (!song) return;
+    const audio = audioRef.current;
+    audio.src = getStreamUrl(song.fileName);
+    audio.currentTime = pos.time;
+    setCurrentSong(song);
+    setCurrentTime(pos.time);
+  }, [songs]);
+
+  // ── Audio events ──────────────────────────────────────────
   useEffect(() => {
     const audio = audioRef.current;
-    const onTime     = () => setCurrentTime(audio.currentTime);
-    const onMeta     = () => setDuration(audio.duration || 0);
-    const onEnded    = () => {
-      if (repeat) { audio.currentTime = 0; audio.play(); return; }
-      playNext();
+    const onTime  = () => {
+      setCurrentTime(audio.currentTime);
+      // Save position every 5s
+      clearTimeout(saveTimer.current);
+      saveTimer.current = window.setTimeout(() => {
+        if (audio.src && currentSong) savePosition(currentSong.id, audio.currentTime);
+      }, 5000);
     };
+    const onMeta  = () => setDuration(audio.duration || 0);
+    const onEnded = () => { if (repeat) { audio.currentTime = 0; audio.play(); return; } playNext(); };
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("loadedmetadata", onMeta);
     audio.addEventListener("ended", onEnded);
@@ -34,41 +65,34 @@ export function usePlayer(songs: Song[]) {
     };
   }, [repeat, currentSong, queue, shuffle, songs]);
 
-  useEffect(() => { audioRef.current.volume = volume; }, [volume]);
-
-  // ── Media Session API ────────────────────────────────────
+  // ── Media Session ─────────────────────────────────────────
   useEffect(() => {
     if (!currentSong || !("mediaSession" in navigator)) return;
     const artUrl = getArtworkUrl(currentSong.artworkUrl);
     navigator.mediaSession.metadata = new MediaMetadata({
-      title:  currentSong.title,
-      artist: currentSong.artist,
-      album:  currentSong.album,
+      title: currentSong.title, artist: currentSong.artist, album: currentSong.album,
       artwork: artUrl ? [{ src: artUrl, sizes: "512x512", type: "image/jpeg" }] : [],
     });
     navigator.mediaSession.setActionHandler("play",          () => { audioRef.current.play(); setPlaying(true); });
     navigator.mediaSession.setActionHandler("pause",         () => { audioRef.current.pause(); setPlaying(false); });
     navigator.mediaSession.setActionHandler("nexttrack",     () => playNext());
     navigator.mediaSession.setActionHandler("previoustrack", () => playPrev());
-    navigator.mediaSession.setActionHandler("seekto", (d) => {
-      if (d.seekTime != null) audioRef.current.currentTime = d.seekTime;
-    });
+    navigator.mediaSession.setActionHandler("seekto",        (d) => { if (d.seekTime != null) audioRef.current.currentTime = d.seekTime; });
   }, [currentSong]);
 
-  // Keep Media Session playback state in sync
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
     navigator.mediaSession.playbackState = playing ? "playing" : "paused";
   }, [playing]);
 
-  // ── Keyboard shortcuts ───────────────────────────────────
+  // ── Keyboard ──────────────────────────────────────────────
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
-      if (e.code === "Space")                       { e.preventDefault(); togglePlay(); }
-      else if (e.code === "ArrowRight" && e.ctrlKey){ e.preventDefault(); playNext(); }
-      else if (e.code === "ArrowLeft"  && e.ctrlKey){ e.preventDefault(); playPrev(); }
+      if (e.code === "Space")                        { e.preventDefault(); togglePlay(); }
+      else if (e.code === "ArrowRight" && e.ctrlKey) { e.preventDefault(); playNext(); }
+      else if (e.code === "ArrowLeft"  && e.ctrlKey) { e.preventDefault(); playPrev(); }
       else if (e.code === "ArrowRight") audioRef.current.currentTime = Math.min(audioRef.current.currentTime + 10, audioRef.current.duration || 0);
       else if (e.code === "ArrowLeft")  audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0);
     };
@@ -76,23 +100,21 @@ export function usePlayer(songs: Song[]) {
     return () => window.removeEventListener("keydown", h);
   }, [currentSong, songs, queue]);
 
-  // ── Core play ────────────────────────────────────────────
+  // ── Core play ─────────────────────────────────────────────
   const _playSong = useCallback((song: Song, newQueue?: Song[]) => {
     const audio = audioRef.current;
     audio.src = getStreamUrl(song.fileName);
     audio.play().catch(console.error);
-    setCurrentSong(song);
-    setPlaying(true);
+    setCurrentSong(song); setPlaying(true);
+    clearPosition();
     pushHistory(song.id);
     setPlayHistory(h => [song, ...h.filter(s => s.id !== song.id)].slice(0, 50));
     if (newQueue !== undefined) setQueue(newQueue);
   }, []);
 
-  // Called from UI: play a song and rebuild queue from library position
   const playSong = useCallback((song: Song) => {
     const idx = songs.findIndex(s => s.id === song.id);
-    const tail = idx >= 0 ? songs.slice(idx + 1) : [];
-    _playSong(song, tail);
+    _playSong(song, idx >= 0 ? songs.slice(idx + 1) : []);
   }, [songs, _playSong]);
 
   const togglePlay = useCallback(() => {
@@ -105,15 +127,10 @@ export function usePlayer(songs: Song[]) {
   const playNext = useCallback(() => {
     if (shuffle) {
       const pool = songs.filter(s => s.id !== currentSong?.id);
-      if (!pool.length) return;
-      _playSong(pool[Math.floor(Math.random() * pool.length)]);
+      if (pool.length) _playSong(pool[Math.floor(Math.random() * pool.length)]);
       return;
     }
-    if (queue.length > 0) {
-      const [next, ...rest] = queue;
-      _playSong(next, rest);
-      return;
-    }
+    if (queue.length > 0) { const [next, ...rest] = queue; _playSong(next, rest); return; }
     if (!songs.length) return;
     const idx = songs.findIndex(s => s.id === currentSong?.id);
     _playSong(songs[(idx + 1) % songs.length]);
@@ -127,14 +144,17 @@ export function usePlayer(songs: Song[]) {
     _playSong(songs[(idx - 1 + songs.length) % songs.length]);
   }, [playHistory, songs, currentSong, _playSong]);
 
-  const seek      = useCallback((t: number) => { audioRef.current.currentTime = t; }, []);
-  const setVolume = useCallback((v: number) => { setVolumeState(v); audioRef.current.volume = v; }, []);
+  const seek = useCallback((t: number) => { audioRef.current.currentTime = t; }, []);
 
-  // ── Queue management ─────────────────────────────────────
-  const addToQueue        = useCallback((song: Song) => setQueue(q => [...q, song]), []);
-  const removeFromQueue   = useCallback((idx: number) => setQueue(q => q.filter((_, i) => i !== idx)), []);
-  const clearQueue        = useCallback(() => setQueue([]), []);
-  const moveInQueue       = useCallback((from: number, to: number) => {
+  const setVolume = useCallback((v: number) => {
+    setVolumeState(v); audioRef.current.volume = v; saveVolume(v);
+  }, []);
+
+  // ── Queue management ──────────────────────────────────────
+  const addToQueue      = useCallback((song: Song) => setQueue(q => [...q, song]), []);
+  const removeFromQueue = useCallback((idx: number) => setQueue(q => q.filter((_, i) => i !== idx)), []);
+  const clearQueue      = useCallback(() => setQueue([]), []);
+  const moveInQueue     = useCallback((from: number, to: number) => {
     setQueue(q => {
       const next = [...q];
       const [item] = next.splice(from, 1);
@@ -144,26 +164,10 @@ export function usePlayer(songs: Song[]) {
   }, []);
 
   return {
-    audioRef,
-    currentSong,
-    queue,
-    playing,
-    currentTime,
-    duration,
-    volume,
-    shuffle,
-    repeat,
-    playHistory,
-    playSong,
-    togglePlay,
-    playNext,
-    playPrev,
-    seek,
-    setVolume,
-    addToQueue,
-    removeFromQueue,
-    clearQueue,
-    moveInQueue,
+    audioRef, currentSong, queue, playing, currentTime, duration,
+    volume, shuffle, repeat, playHistory,
+    playSong, togglePlay, playNext, playPrev, seek, setVolume,
+    addToQueue, removeFromQueue, clearQueue, moveInQueue,
     toggleShuffle: () => setShuffle(s => !s),
     toggleRepeat:  () => setRepeat(r => !r),
   };

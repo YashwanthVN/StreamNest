@@ -1,6 +1,6 @@
-import { Music4, ListMusic, Heart, Clock, List, Settings } from "lucide-react";
+import { Music4, ListMusic, Heart, Clock, List, Settings, Disc } from "lucide-react";
 
-export type View = "library" | "favorites" | "queue" | "history" | "playlists";
+export type View = "library" | "favorites" | "albums" | "queue" | "history" | "playlists" | "settings";
 
 type Props = {
   activeView: View;
@@ -11,10 +11,11 @@ type Props = {
 
 export default function Sidebar({ activeView, onViewChange, songCount, queueCount }: Props) {
   const nav: { id: View; icon: React.ElementType; label: string; count?: number }[] = [
-    { id: "library",   icon: Music4,    label: "Library",   count: songCount },
+    { id: "library",   icon: Music4,    label: "Library",  count: songCount },
     { id: "favorites", icon: Heart,     label: "Favorites" },
+    { id: "albums",    icon: Disc,      label: "Albums" },
     { id: "playlists", icon: List,      label: "Playlists" },
-    { id: "queue",     icon: ListMusic, label: "Queue",     count: queueCount || undefined },
+    { id: "queue",     icon: ListMusic, label: "Queue",    count: queueCount || undefined },
     { id: "history",   icon: Clock,     label: "History" },
   ];
 
@@ -38,7 +39,10 @@ export default function Sidebar({ activeView, onViewChange, songCount, queueCoun
           </button>
         ))}
       </nav>
-      <button className="sidebar-settings">
+      <button
+        className={`sidebar-settings ${activeView === "settings" ? "active" : ""}`}
+        onClick={() => onViewChange("settings")}
+      >
         <Settings size={16} /><span>Settings</span>
       </button>
     </aside>
