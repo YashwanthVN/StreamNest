@@ -1,21 +1,47 @@
-import { Music, Search } from "lucide-react";
+import { Music4, ListMusic, Heart, Settings } from "lucide-react";
 
-export default function Sidebar() {
+type View = "library" | "favorites";
+
+type Props = {
+  activeView: View;
+  onViewChange: (v: View) => void;
+  songCount: number;
+};
+
+export default function Sidebar({ activeView, onViewChange, songCount }: Props) {
+  const navItems = [
+    { id: "library" as View, icon: Music4, label: "Library", count: songCount },
+    { id: "favorites" as View, icon: Heart, label: "Favorites" },
+  ];
+
   return (
     <aside className="sidebar">
-      <h2>🎵 StreamNest</h2>
+      <div className="sidebar-logo">
+        <div className="logo-mark">
+          <ListMusic size={20} />
+        </div>
+        <span className="logo-text">StreamNest</span>
+      </div>
 
-      <nav>
-        <button>
-          <Music size={18}/>
-          Library
-        </button>
-
-        <button>
-          <Search size={18}/>
-          Search
-        </button>
+      <nav className="sidebar-nav">
+        <p className="nav-section-label">Menu</p>
+        {navItems.map(({ id, icon: Icon, label, count }) => (
+          <button
+            key={id}
+            className={`nav-item ${activeView === id ? "active" : ""}`}
+            onClick={() => onViewChange(id)}
+          >
+            <Icon size={18} />
+            <span>{label}</span>
+            {count !== undefined && <span className="nav-badge">{count}</span>}
+          </button>
+        ))}
       </nav>
+
+      <button className="sidebar-settings">
+        <Settings size={16} />
+        <span>Settings</span>
+      </button>
     </aside>
   );
 }
