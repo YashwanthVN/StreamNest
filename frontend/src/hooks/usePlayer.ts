@@ -1,199 +1,170 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import type { Song } from "../types/Song";
-import { getStreamUrl } from "../services/api";
+import { getStreamUrl, getArtworkUrl } from "../services/api";
+import { pushHistory } from "../services/storage";
 
 export function usePlayer(songs: Song[]) {
-  const audioRef = useRef<HTMLAudioElement>(new Audio());
+  const audioRef        = useRef<HTMLAudioElement>(new Audio());
+  const [currentSong, setCurrentSong]   = useState<Song | undefined>();
+  const [queue, setQueue]               = useState<Song[]>([]);   // upcoming
+  const [playing, setPlaying]           = useState(false);
+  const [currentTime, setCurrentTime]   = useState(0);
+  const [duration, setDuration]         = useState(0);
+  const [volume, setVolumeState]        = useState(0.8);
+  const [shuffle, setShuffle]           = useState(false);
+  const [repeat, setRepeat]             = useState(false);
+  const [playHistory, setPlayHistory]   = useState<Song[]>([]);
 
-  const [currentSong, setCurrentSong] = useState<Song | undefined>();
-  const [playing, setPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolumeState] = useState(0.8);
-  const [shuffle, setShuffle] = useState(false);
-  const [repeat, setRepeat] = useState(false);
-  const [history, setHistory] = useState<string[]>([]);
-
-  /* ---------- Core playback actions ---------- */
-
-  const playSong = useCallback((song: Song) => {
-    const audio = audioRef.current;
-
-    audio.src = getStreamUrl(song.fileName);
-    audio.play().catch(console.error);
-
-    setCurrentSong(song);
-    setHistory((h) => [...h.slice(-49), song.id]);
-  }, []);
-
-  const playNext = useCallback(() => {
-    if (!songs.length) return;
-
-    if (shuffle) {
-      const others = songs.filter((s) => s.id !== currentSong?.id);
-      const next =
-        others[Math.floor(Math.random() * others.length)] || songs[0];
-
-      playSong(next);
-    } else {
-      const idx = songs.findIndex((s) => s.id === currentSong?.id);
-      playSong(songs[(idx + 1) % songs.length]);
-    }
-  }, [songs, currentSong, shuffle, playSong]);
-
-  const playPrev = useCallback(() => {
-    if (!songs.length) return;
-
-    if (audioRef.current.currentTime > 3) {
-      audioRef.current.currentTime = 0;
-      return;
-    }
-
-    if (history.length > 1) {
-      const prevId = history[history.length - 2];
-      const prev = songs.find((s) => s.id === prevId);
-
-      if (prev) {
-        setHistory((h) => h.slice(0, -1));
-        playSong(prev);
-        return;
-      }
-    }
-
-    const idx = songs.findIndex((s) => s.id === currentSong?.id);
-    playSong(songs[(idx - 1 + songs.length) % songs.length]);
-  }, [songs, currentSong, history, playSong]);
-
-  const togglePlay = useCallback(() => {
-    const audio = audioRef.current;
-
-    if (!currentSong) return;
-
-    if (audio.paused) {
-      audio.play().catch(console.error);
-    } else {
-      audio.pause();
-    }
-  }, [currentSong]);
-
-  const seek = useCallback((time: number) => {
-    audioRef.current.currentTime = time;
-  }, []);
-
-  const setVolume = useCallback((v: number) => {
-    setVolumeState(v);
-    audioRef.current.volume = v;
-  }, []);
-
-  /* ---------- Audio event listeners ---------- */
-
+  // ── Audio events ────────────────────────────────────────
   useEffect(() => {
     const audio = audioRef.current;
-
-    const onTime = () => setCurrentTime(audio.currentTime);
-
-    const onDuration = () => {
-      setDuration(audio.duration || 0);
+    const onTime     = () => setCurrentTime(audio.currentTime);
+    const onMeta     = () => setDuration(audio.duration || 0);
+    const onEnded    = () => {
+      if (repeat) { audio.currentTime = 0; audio.play(); return; }
+      playNext();
     };
-
-    const onPlay = () => {
-      setPlaying(true);
-    };
-
-    const onPause = () => {
-      setPlaying(false);
-    };
-
-    const onEnded = () => {
-      if (repeat) {
-        audio.currentTime = 0;
-        audio.play().catch(console.error);
-      } else {
-        playNext();
-      }
-    };
-
     audio.addEventListener("timeupdate", onTime);
-    audio.addEventListener("loadedmetadata", onDuration);
-    audio.addEventListener("play", onPlay);
-    audio.addEventListener("pause", onPause);
+    audio.addEventListener("loadedmetadata", onMeta);
     audio.addEventListener("ended", onEnded);
-
     return () => {
       audio.removeEventListener("timeupdate", onTime);
-      audio.removeEventListener("loadedmetadata", onDuration);
-      audio.removeEventListener("play", onPlay);
-      audio.removeEventListener("pause", onPause);
+      audio.removeEventListener("loadedmetadata", onMeta);
       audio.removeEventListener("ended", onEnded);
     };
-  }, [repeat, playNext]);
+  }, [repeat, currentSong, queue, shuffle, songs]);
 
-  /* ---------- Volume sync ---------- */
+  useEffect(() => { audioRef.current.volume = volume; }, [volume]);
 
+  // ── Media Session API ────────────────────────────────────
   useEffect(() => {
-    audioRef.current.volume = volume;
-  }, [volume]);
+    if (!currentSong || !("mediaSession" in navigator)) return;
+    const artUrl = getArtworkUrl(currentSong.artworkUrl);
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title:  currentSong.title,
+      artist: currentSong.artist,
+      album:  currentSong.album,
+      artwork: artUrl ? [{ src: artUrl, sizes: "512x512", type: "image/jpeg" }] : [],
+    });
+    navigator.mediaSession.setActionHandler("play",          () => { audioRef.current.play(); setPlaying(true); });
+    navigator.mediaSession.setActionHandler("pause",         () => { audioRef.current.pause(); setPlaying(false); });
+    navigator.mediaSession.setActionHandler("nexttrack",     () => playNext());
+    navigator.mediaSession.setActionHandler("previoustrack", () => playPrev());
+    navigator.mediaSession.setActionHandler("seekto", (d) => {
+      if (d.seekTime != null) audioRef.current.currentTime = d.seekTime;
+    });
+  }, [currentSong]);
 
-  /* ---------- Keyboard shortcuts ---------- */
-
+  // Keep Media Session playback state in sync
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      const tag = target?.tagName;
+    if (!("mediaSession" in navigator)) return;
+    navigator.mediaSession.playbackState = playing ? "playing" : "paused";
+  }, [playing]);
 
-      if (
-        tag === "INPUT" ||
-        tag === "TEXTAREA" ||
-        target?.isContentEditable
-      ) {
-        return;
-      }
-
-      if (e.code === "Space") {
-        e.preventDefault();
-        togglePlay();
-      } else if (e.code === "ArrowRight" && e.ctrlKey) {
-        e.preventDefault();
-        playNext();
-      } else if (e.code === "ArrowLeft" && e.ctrlKey) {
-        e.preventDefault();
-        playPrev();
-      } else if (e.code === "ArrowRight") {
-        audioRef.current.currentTime = Math.min(
-          audioRef.current.currentTime + 10,
-          audioRef.current.duration || 0
-        );
-      } else if (e.code === "ArrowLeft") {
-        audioRef.current.currentTime = Math.max(
-          audioRef.current.currentTime - 10,
-          0
-        );
-      }
+  // ── Keyboard shortcuts ───────────────────────────────────
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (e.code === "Space")                       { e.preventDefault(); togglePlay(); }
+      else if (e.code === "ArrowRight" && e.ctrlKey){ e.preventDefault(); playNext(); }
+      else if (e.code === "ArrowLeft"  && e.ctrlKey){ e.preventDefault(); playPrev(); }
+      else if (e.code === "ArrowRight") audioRef.current.currentTime = Math.min(audioRef.current.currentTime + 10, audioRef.current.duration || 0);
+      else if (e.code === "ArrowLeft")  audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0);
     };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [currentSong, songs, queue]);
 
-    window.addEventListener("keydown", handler);
+  // ── Core play ────────────────────────────────────────────
+  const _playSong = useCallback((song: Song, newQueue?: Song[]) => {
+    const audio = audioRef.current;
+    audio.src = getStreamUrl(song.fileName);
+    audio.play().catch(console.error);
+    setCurrentSong(song);
+    setPlaying(true);
+    pushHistory(song.id);
+    setPlayHistory(h => [song, ...h.filter(s => s.id !== song.id)].slice(0, 50));
+    if (newQueue !== undefined) setQueue(newQueue);
+  }, []);
 
-    return () => {
-      window.removeEventListener("keydown", handler);
-    };
-  }, [togglePlay, playNext, playPrev]);
+  // Called from UI: play a song and rebuild queue from library position
+  const playSong = useCallback((song: Song) => {
+    const idx = songs.findIndex(s => s.id === song.id);
+    const tail = idx >= 0 ? songs.slice(idx + 1) : [];
+    _playSong(song, tail);
+  }, [songs, _playSong]);
+
+  const togglePlay = useCallback(() => {
+    if (!currentSong) return;
+    const audio = audioRef.current;
+    if (playing) { audio.pause(); setPlaying(false); }
+    else         { audio.play().catch(console.error); setPlaying(true); }
+  }, [playing, currentSong]);
+
+  const playNext = useCallback(() => {
+    if (shuffle) {
+      const pool = songs.filter(s => s.id !== currentSong?.id);
+      if (!pool.length) return;
+      _playSong(pool[Math.floor(Math.random() * pool.length)]);
+      return;
+    }
+    if (queue.length > 0) {
+      const [next, ...rest] = queue;
+      _playSong(next, rest);
+      return;
+    }
+    if (!songs.length) return;
+    const idx = songs.findIndex(s => s.id === currentSong?.id);
+    _playSong(songs[(idx + 1) % songs.length]);
+  }, [queue, songs, currentSong, shuffle, _playSong]);
+
+  const playPrev = useCallback(() => {
+    if (audioRef.current.currentTime > 3) { audioRef.current.currentTime = 0; return; }
+    if (playHistory.length > 1) { _playSong(playHistory[1]); return; }
+    if (!songs.length) return;
+    const idx = songs.findIndex(s => s.id === currentSong?.id);
+    _playSong(songs[(idx - 1 + songs.length) % songs.length]);
+  }, [playHistory, songs, currentSong, _playSong]);
+
+  const seek      = useCallback((t: number) => { audioRef.current.currentTime = t; }, []);
+  const setVolume = useCallback((v: number) => { setVolumeState(v); audioRef.current.volume = v; }, []);
+
+  // ── Queue management ─────────────────────────────────────
+  const addToQueue        = useCallback((song: Song) => setQueue(q => [...q, song]), []);
+  const removeFromQueue   = useCallback((idx: number) => setQueue(q => q.filter((_, i) => i !== idx)), []);
+  const clearQueue        = useCallback(() => setQueue([]), []);
+  const moveInQueue       = useCallback((from: number, to: number) => {
+    setQueue(q => {
+      const next = [...q];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      return next;
+    });
+  }, []);
 
   return {
     audioRef,
     currentSong,
+    queue,
     playing,
     currentTime,
     duration,
     volume,
     shuffle,
     repeat,
+    playHistory,
     playSong,
     togglePlay,
     playNext,
     playPrev,
     seek,
     setVolume,
-    toggleShuffle: () => setShuffle((s) => !s),
-    toggleRepeat: () => setRepeat((r) => !r),
+    addToQueue,
+    removeFromQueue,
+    clearQueue,
+    moveInQueue,
+    toggleShuffle: () => setShuffle(s => !s),
+    toggleRepeat:  () => setRepeat(r => !r),
   };
 }

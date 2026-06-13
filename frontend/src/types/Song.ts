@@ -6,3 +6,15 @@ export interface Song {
   fileName: string;
   artworkUrl?: string;
 }
+
+export interface Playlist {
+  id: string;
+  name: string;
+  songIds: string[];
+  createdAt: number;
+}
+
+export interface HistoryEntry {
+  songId: string;
+  playedAt: number;
+}
