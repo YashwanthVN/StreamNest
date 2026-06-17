@@ -1,82 +1,236 @@
-# StreamNest
+# StreamNest 🎵
 
-A self-hosted music streaming platform that turns an Android device into a personal music server.
+> A self-hosted music streaming platform that transforms an Android phone into a personal music server.
 
-## Features
+Stream your music collection from anywhere in the world using a lightweight Spring Boot backend, a React Progressive Web App (PWA), and secure networking through Tailscale.
 
-- Stream music from your personal library
-- Android phone acts as the media server
-- React Progressive Web App (PWA) frontend
-- Search songs, artists, and albums
-- Remote access through Tailscale
-- Lightweight and self-hosted
+---
 
-## Architecture
+# Features
+
+## Music Library
+
+* Automatic music library scanning
+* MP3 metadata extraction
+* Album, artist, and title detection
+* Embedded album artwork extraction
+* Dynamic library refresh
+
+## Audio Streaming
+
+* HTTP audio streaming
+* Browser-based playback
+* Queue management
+* Next / Previous controls
+* Shuffle mode
+* Repeat mode
+* Seek controls
+* Volume controls
+
+## User Experience
+
+* Modern React interface
+* Progressive Web App (PWA)
+* Installable on Android
+* Search songs instantly
+* Artist browsing
+* Album browsing
+* Playback history
+* Favorite songs support
+
+## Remote Access
+
+* Secure Tailscale networking
+* Access music from anywhere
+* No port forwarding required
+* End-to-end encrypted connections
+
+---
+
+# Architecture
 
 ```text
-                      React PWA
-                          │
-                          ▼
-                    Spring Boot API
-                          │
-                          ▼
-                   Android Phone Server
-                          │
-        ┌─────────────────┴─────────────────┐
-        │                                   │
-        ▼                                   ▼
-Metadata Cache                         Music Files
+                          Internet
+                              │
+                              ▼
+                        Tailscale VPN
+                              │
+                              ▼
+                      Android Phone
+                    (24/7 Music Server)
+                              │
+         ┌────────────────────┴────────────────────┐
+         │                                         │
+         ▼                                         ▼
+   Spring Boot Backend                     Music Library
+        Port 8080                           MP3 Files
+         │
+         ▼
+      REST APIs
+         │
+         ▼
+   React PWA Frontend
+      Port 3000
+         │
+         ▼
+       Browser
+       Mobile
+       Desktop
 ```
 
-## Tech Stack
+---
 
-## API Endpoints
+# Desktop Screenshots
 
-### Health Check
+Create the following folder:
+
+```text
+screenshots/
+├── desktop-home.png
+├── desktop-player.png
+└── desktop-library.png
+```
+
+### Home Screen
+
+![Desktop Home](screenshots/desktop-home.png)
+
+### Music Player
+
+![Desktop Player](screenshots/desktop-player.png)
+
+### Library View
+
+![Desktop Library](screenshots/desktop-library.png)
+
+---
+
+# Android Screenshots
+
+Create the following folder:
+
+```text
+screenshots/
+├── android-home.jpg
+├── android-player.jpg
+└── android-library.jpg
+```
+
+### Android Home
+
+![Android Home](screenshots/android-home.jpg)
+
+### Android Player
+
+![Android Player](screenshots/android-player.jpg)
+
+### Android Library
+
+![Android Library](screenshots/android-library.jpg)
+
+---
+
+# Tech Stack
+
+## Backend
+
+* Java 23
+* Spring Boot 3
+* Maven
+* Apache Tomcat
+
+## Frontend
+
+* React
+* TypeScript
+* Vite
+* Progressive Web App (PWA)
+* Lucide Icons
+
+## Mobile Deployment
+
+* Android
+* Termux
+* Java Runtime
+
+## Networking
+
+* Tailscale
+
+---
+
+# API Endpoints
+
+## Health Check
 
 ```http
 GET /api/health
 ```
 
-Example Response:
+Response:
 
 ```json
 {
   "status": "ok",
   "service": "StreamNest",
-  "version": "0.0.1"
+  "version": "1.0.0"
 }
 ```
 
-### List Songs
+---
+
+## List Songs
 
 ```http
 GET /api/songs
 ```
 
-### Stream Audio
+Returns all scanned songs with metadata.
+
+---
+
+## Stream Song
 
 ```http
 GET /api/stream/{filename}
 ```
 
-## Local Development
+Streams audio content.
 
-### Backend
+---
+
+## Album Artwork
+
+```http
+GET /api/artwork/{songId}
+```
+
+Returns embedded album artwork.
+
+---
+
+# Local Development
+
+## Backend
 
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
 
-```
-Server: http://localhost:8080
+Server:
+
+```text
+http://localhost:8080
 ```
 
-### Frontend
+---
+
+## Frontend
 
 ```bash
 cd frontend
+
 npm install
 npm run dev
 ```
@@ -87,73 +241,274 @@ Server:
 http://localhost:5173
 ```
 
-### Backend
-- Spring Boot
-- Java
-- SQLite
+---
 
-### Infrastructure
-- Android (Server)
-- Tailscale
+# Production Build
 
-## Project Status
+## Frontend
 
-Phase 1: Backend MVP
-- ✓ Health API
-- ✓ Music Scan API
-- ✓ Metadata API
-- ✓ Audio Streaming API
+```bash
+cd frontend
 
-Phase 2: Frontend
-- ✓ React + Vite
-- ✓ Song List
-- ✓ Search
-- ✓ Audio Player
+npm run build
+```
 
-Phase 3: Phone Deployment
-- ✓ Build Jar
-- ⬜ Copy to Android
-- ⬜ Run via Termux
+Generated output:
 
-Phase 4: Remote Access
-- ⬜ Tailscale
-- ⬜ Global streaming
+```text
+frontend/dist
+```
 
-🚧 Active Development
+---
 
-Current Progress:
-- ✅ Spring Boot backend initialized
-- ✅ Music library scanning
-- ✅ MP3 metadata extraction (ID3 tags)
-- ✅ Audio streaming endpoint
-- ✅ React + TypeScript frontend initialized
-- ✅ Frontend song browser
-- ✅ Audio player UI
-- ⏳ Android deployment
+## Backend
 
-## Roadmap
+```bash
+cd backend
 
-- [ ] Setup Android server environment
-- [ ] Setup Spring Boot backend
-- [ ] Scan local music library
-- [ ] Search API
-- [ ] Audio streaming API
-- [ ] React PWA frontend
-- [ ] Global access via Tailscale
-- [ ] Playlists
+./mvnw clean package
+```
 
-## Version 1 Goals
+Generated output:
 
-The initial release focuses on:
+```text
+backend/target/backend-0.0.1-SNAPSHOT.jar
+```
 
-- Music library scanning
-- Metadata extraction
-- Search functionality
-- Audio streaming
-- Android phone deployment
+---
 
-The first version intentionally avoids:
-- Recommendation systems
-- Authentication
-- Database persistence
-- User accounts
+# Android Deployment
+
+## Folder Structure
+
+```text
+Phone/
+└── StreamNest/
+    ├── backend/
+    │   └── streamnest.jar
+    │
+    └── music/
+        ├── song1.mp3
+        ├── song2.mp3
+        └── ...
+```
+
+---
+
+## Start Backend
+
+```bash
+cd ~/storage/shared/StreamNest/backend
+
+java -jar streamnest.jar
+```
+
+---
+
+## Verify Backend
+
+```text
+http://PHONE_IP:8080/api/health
+```
+
+---
+
+## Verify Frontend
+
+```text
+http://PHONE_IP:3000
+```
+
+---
+
+# Remote Access via Tailscale
+
+Install Tailscale on:
+
+* Android Server
+* Laptop/Desktop
+* Mobile Client Devices
+
+After joining the same Tailnet:
+
+```text
+http://TAILSCALE_IP:3000
+```
+
+Example:
+
+```text
+http://100.x.x.x:3000
+```
+
+Backend:
+
+```text
+http://100.x.x.x:8080
+```
+
+No port forwarding required.
+
+---
+
+# Project Status
+
+## Phase 1 — Backend MVP
+
+* ✅ Spring Boot Setup
+* ✅ Health Endpoint
+* ✅ Music Scanner
+* ✅ Metadata Extraction
+* ✅ Album Artwork Extraction
+* ✅ Audio Streaming API
+
+---
+
+## Phase 2 — Frontend
+
+* ✅ React + Vite
+* ✅ TypeScript
+* ✅ Audio Player
+* ✅ Queue System
+* ✅ Search
+* ✅ Favorites
+* ✅ Playback History
+* ✅ Shuffle
+* ✅ Repeat
+* ✅ PWA Support
+
+---
+
+## Phase 3 — Android Deployment
+
+* ✅ Spring Boot JAR Build
+* ✅ Android Deployment
+* ✅ Termux Setup
+* ✅ Music Folder Integration
+* ✅ Mobile Browser Testing
+
+---
+
+## Phase 4 — Global Access
+
+* ✅ Tailscale Setup
+* ✅ Remote Streaming
+* ✅ Global Accessibility
+* ✅ Cross-device Playback
+
+---
+
+# Current Release
+
+## Version 1.0.0
+
+Status:
+
+```text
+Stable
+```
+
+### Included Features
+
+* Music library management
+* Audio streaming
+* Album artwork support
+* Search
+* Queue management
+* Android deployment
+* Remote access through Tailscale
+* Progressive Web App (PWA)
+
+---
+
+# Roadmap
+
+## Version 1.1
+
+### Quality Improvements
+
+* [ ] Mobile responsive UI
+* [ ] Better tablet layouts
+* [ ] Persistent playlists
+* [ ] Recently played section
+* [ ] Library refresh button
+* [ ] Better artwork fallback handling
+
+---
+
+## Version 2.0
+
+### Native Android Application
+
+Move from a browser-based PWA to a dedicated Android application.
+
+### Planned Stack
+
+* Kotlin
+* Jetpack Compose
+* Material 3
+
+### Features
+
+* [ ] Native Android UI
+* [ ] Background playback
+* [ ] Android notifications
+* [ ] Lock screen controls
+* [ ] Offline caching
+* [ ] Download songs
+* [ ] Native media session integration
+* [ ] Android Auto support
+
+---
+
+## Version 2.5
+
+### Multi-Device Streaming
+
+* [ ] Multiple concurrent clients
+* [ ] Shared libraries
+* [ ] Remote queue management
+* [ ] Device synchronization
+
+---
+
+## Version 3.0
+
+### Intelligent Music Platform
+
+* [ ] AI Playlist Generation
+* [ ] Recommendation Engine
+* [ ] Similar Song Discovery
+* [ ] Mood-Based Music Suggestions
+* [ ] Natural Language Search
+* [ ] Voice Commands
+
+### Potential Technologies
+
+* Spring AI
+* LangChain
+* Local LLM Integration
+* Vector Databases
+
+---
+
+# Long-Term Vision
+
+Create a fully self-hosted music ecosystem that combines:
+
+* Spotify-like user experience
+* Plex-style ownership
+* Android-first deployment
+* AI-powered discovery
+* Complete user control
+
+without requiring subscriptions, cloud hosting, or third-party music services.
+
+---
+
+# 📄 License
+
+This project is licensed under the MIT License.
+
+Feel free to fork, modify, and build upon it.
+screenshots
