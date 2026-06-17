@@ -93,40 +93,39 @@ screenshots/
 
 ### Home Screen
 
-![Desktop Home](screenshots/desktop-home.png)
+![Desktop Home](screenshots/desktop-home-dark.png)
 
-### Music Player
+### Favorites
 
-![Desktop Player](screenshots/desktop-player.png)
+![Desktop Player](screenshots/desktop-favorites.png)
 
-### Library View
+### Queue
 
-![Desktop Library](screenshots/desktop-library.png)
+![Desktop Library](screenshots/desktop-queue.png)
 
 ---
 
 # Android Screenshots
 
-Create the following folder:
-
-```text
-screenshots/
-├── android-home.jpg
-├── android-player.jpg
-└── android-library.jpg
-```
-
 ### Android Home
 
 ![Android Home](screenshots/android-home.jpg)
 
-### Android Player
+### Android Album
 
-![Android Player](screenshots/android-player.jpg)
+![Android Player](screenshots/android-albums-albums.jpg)
 
-### Android Library
+### Android Notification Bar
 
-![Android Library](screenshots/android-library.jpg)
+![Android Library](screenshots/android-notification bar-media controls.jpg)
+
+### Android Lock Screen
+
+![Android Library](screenshots/android-lock screen-media controls.jpg)
+
+### Android Settings
+
+![Android Library](screenshots/android-settings-amoled.jpg)
 
 ---
 
