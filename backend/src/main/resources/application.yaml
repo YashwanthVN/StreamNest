@@ -6,4 +6,4 @@ server:
   port: 8080
 
 streamnest:
-  music-path: D:/Yashwanth/Music
+  music-path: ${MUSIC_PATH:D:/Yashwanth/Music}

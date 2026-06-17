@@ -33,7 +33,7 @@ Thumbs.db
 # =========================
 # Environment Variables
 # =========================
-.env
+.env*
 .env.local
 !.env.example
 
@@ -41,3 +41,8 @@ Thumbs.db
 # Generated Files
 # =========================
 coverage/
+
+# =========================
+# Version Releases
+# =========================
+StreamNest-Releases/
